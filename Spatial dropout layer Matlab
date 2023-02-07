@@ -1,0 +1,48 @@
+%%% Matlab does not have a builtin spatial dropout layer like python
+%%% so in this case you need to define a class to run sptial dropout for you you
+
+%%% class code for spatial dropout layer%%%
+classdef spatialDropoutLayer < nnet.layer.Layer & nnet.layer.Formattable
+    properties
+        DropoutFactor
+    end
+
+    methods
+        function layer = spatialDropoutLayer(dropoutFactor,NameValueArgs)
+            arguments
+                DF = 0.02; % DF is dropout factor 
+                NameValueArgs.Name = ""
+            end
+            name = NameValueArgs.Name;
+
+            % Set layer properties.
+            layer.Name = name;
+            layer.Description = "Spatial_dropout_with_factor " + DF;
+            layer.Type = "Spatial_Dropout";
+            layer.DropoutFactor = DF;
+        end
+
+        function Y = predict(layer, X)
+            % Forward input data through the layer at prediction time and
+            Y = X;
+        end
+
+        function Y = forward(layer, X)
+            % Forward input data through the layer at training
+
+            dropoutFactor = layer.DropoutFactor;
+
+            % Mask dimensions.
+            D = dims(X); % returns the data format of X as a character array
+            MS = size(X); % mask_size
+            MS(ismember(D,'ST')) = 1;
+
+            % Create mask.
+            DSF = single(1 - DF); % DSF  is dropoutScaleFactor 
+            DM = (rand(maskSize,'like',X) > DF) / DSF; % DM is dropoutMask
+
+            % Dropout
+            Y = X .* DM;
+        end
+    end
+end
